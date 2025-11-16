@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         while True:
             now = timezone.now()
-
+            print("Scheduler tick:", now) 
             tasks = Task.objects.filter(is_active=True, is_paused=False, next_run_at__lte=now)
 
             for task in tasks:

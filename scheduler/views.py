@@ -94,3 +94,54 @@ def cron_preview(request):
         next_times.append(itr.get_next(datetime).strftime("%Y-%m-%d %H:%M:%S"))
 
     return Response({"next_runs": next_times})
+
+@api_view(['GET'])
+def execution_history(request):
+    task_id = request.GET.get('task_id')
+    status = request.GET.get('status')
+
+    logs = TaskExecutionHistory.objects.all()
+
+    if task_id:
+        logs = logs.filter(task_id=task_id)
+
+    if status:
+        logs = logs.filter(status=status)
+
+    data = [{
+        "task": log.task.name,
+        "status": log.status,
+        "log": log.log,
+        "start_time": log.start_time,
+        "end_time": log.end_time
+    } for log in logs]
+
+    return Response(data)
+
+@api_view(['GET'])
+def dashboard_stats(request):
+
+    total_tasks = Task.objects.count()
+    total_executions = TaskExecutionHistory.objects.count()
+    success_count = TaskExecutionHistory.objects.filter(status="success").count()
+    failure_count = TaskExecutionHistory.objects.filter(status="failed").count()
+
+    success_rate = 0
+    if total_executions > 0:
+        success_rate = (success_count / total_executions) * 100
+
+    upcoming = Task.objects.filter(is_active=True).order_by('next_run_at')[:5]
+
+    upcoming_list = [{
+        "task": t.name,
+        "next_run_at": t.next_run_at
+    } for t in upcoming]
+
+    return Response({
+        "total_tasks": total_tasks,
+        "total_executions": total_executions,
+        "success_count": success_count,
+        "failure_count": failure_count,
+        "success_rate": success_rate,
+        "upcoming": upcoming_list
+    })

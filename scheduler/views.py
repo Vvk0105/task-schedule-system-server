@@ -12,6 +12,13 @@ def create_task(request):
     cron = request.data.get('cron_expression')
     depends = request.data.get('depends_on')
 
+    if not cron:
+        return Response({"error": "cron_expression is required"}, status=400)
+
+    if depends and str(depends) == str(name):
+        return Response({"error": "Task cannot depend on itself"}, status=400)
+
+    # create task
     task = Task.objects.create(
         name=name,
         cron_expression=cron,

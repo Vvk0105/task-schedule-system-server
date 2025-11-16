@@ -73,7 +73,7 @@ python manage.py run_scheduler
 
 
 ### 5. Run React Frontend
-
+git clone https://github.com/Vvk0105/task-schedule-system-client.git
 npm i
 npm run dev
 
